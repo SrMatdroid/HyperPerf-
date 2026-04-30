@@ -8,9 +8,6 @@
 ## 🛠️ ¿Qué hace este módulo?
 
 HyperPerf+ aplica en el arranque un conjunto de optimizaciones de kernel y sistema que HyperOS/MIUI no expone al usuario, y añade una **WebUI** accesible desde KSU/Magisk para ajustar y guardar cada parámetro en tiempo real, sin tocar archivos a mano.
-
-No es un módulo de props genérico copiado de internet. Cada ajuste está revisado y probado en hardware Snapdragon real.
-
 ---
 
 ## 🎛️ ¿Qué configura?
