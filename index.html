@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>HyperPerf+ Config</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg-primary: #0d0d0d;
+    --bg-card: #1c1c1e;
+    --border: rgba(255,255,255,0.08);
+    --accent: #3678f0;
+    --accent-green: #34c759;
+    --text-primary: #ffffff;
+    --text-secondary: #8e8e93;
+    --radius-lg: 14px;
+    --radius-md: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #000000;
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.4;
+    min-height: 100vh;
+    padding-bottom: 40px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  header {
+    background: var(--bg-primary);
+    padding: 20px 16px 12px;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .logo { font-size: 24px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+  .logo span { color: var(--accent); }
+  .subtitle { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .badge {
+    display: inline-block; font-size: 10px; color: var(--accent);
+    background: rgba(54,120,240,0.1); padding: 3px 8px;
+    border-radius: 20px; margin-top: 6px;
+  }
+
+  .tab-nav {
+    display: flex; background: var(--bg-primary); padding: 8px 16px;
+    border-bottom: 0.5px solid var(--border);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .tab-btn {
+    flex: 1; height: 36px; background: transparent; border: none;
+    color: var(--text-secondary); font-family: inherit; font-size: 14px;
+    font-weight: 500; cursor: pointer; position: relative; transition: color 0.2s;
+  }
+  .tab-btn.active { color: var(--accent); font-weight: 600; }
+  .tab-btn.active::after {
+    content: ''; position: absolute; bottom: -9px; left: 50%;
+    transform: translateX(-50%); width: 28px; height: 3px;
+    background: var(--accent); border-radius: 3px;
+  }
+
+  main { padding: 12px 16px; display: flex; flex-direction: column; gap: 20px; }
+
+  .page { display: none; flex-direction: column; gap: 20px; }
+  .page.active { display: flex; }
+
+  .section { background: var(--bg-card); border-radius: var(--radius-lg); overflow: hidden; }
+
+  .section-header {
+    padding: 10px 16px 6px; font-size: 11px; font-weight: 600;
+    color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px;
+  }
+
+  .row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; min-height: 44px;
+    border-bottom: 0.5px solid rgba(255,255,255,0.04);
+  }
+  .row:last-child { border-bottom: none; }
+  .row-left { flex: 1; margin-right: 12px; }
+  .row-title { font-size: 15px; font-weight: 400; color: #fff; }
+  .row-desc { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+
+  select {
+    background: transparent; border: none; color: var(--accent);
+    font-family: inherit; font-size: 15px; text-align: right; padding: 4px 0;
+    outline: none; appearance: none; -webkit-appearance: none;
+    direction: rtl; max-width: 200px;
+  }
+
+  .switch {
+    position: relative; display: inline-block;
+    width: 51px; height: 31px; flex-shrink: 0;
+  }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch .slider {
+    position: absolute; cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(120,120,128,0.32); border-radius: 31px; transition: 0.25s;
+  }
+  .switch .slider::before {
+    content: ""; position: absolute;
+    height: 27px; width: 27px; left: 2px; bottom: 2px;
+    background: #fff; border-radius: 50%;
+    transition: 0.25s; box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+  .switch input:checked + .slider { background: var(--accent-green); }
+  .switch input:checked + .slider::before { transform: translateX(20px); }
+
+  input[type="range"] {
+    -webkit-appearance: none; height: 4px;
+    background: rgba(255,255,255,0.15); border-radius: 4px;
+    outline: none; width: 120px; flex-shrink: 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 6px rgba(0,0,0,0.4); cursor: pointer;
+  }
+
+  .slider-row { display: flex; align-items: center; gap: 10px; }
+  .slider-val { font-size: 13px; color: var(--accent); min-width: 36px; text-align: right; }
+
+  .zram-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 16px 12px; }
+  .zram-chip {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text-secondary); font-family: inherit; font-size: 13px;
+    padding: 8px 12px; border-radius: 20px; cursor: pointer; transition: 0.2s;
+  }
+  .zram-chip.active {
+    background: rgba(54,120,240,0.15); border-color: var(--accent); color: var(--accent);
+  }
+
+  .btn-apply {
+    background: var(--accent); color: #fff; font-family: inherit;
+    font-size: 16px; font-weight: 600; padding: 15px; width: 100%;
+    border: none; border-radius: var(--radius-md); cursor: pointer;
+    letter-spacing: 0.3px; transition: opacity 0.2s; margin-top: 8px;
+  }
+  .btn-apply:active { opacity: 0.8; }
+  .btn-apply:disabled { opacity: 0.4; }
+
+  .log-area {
+    background: rgba(0,0,0,0.3); border-radius: var(--radius-md);
+    padding: 10px 14px; max-height: 180px; overflow-y: auto;
+    font-size: 11px; font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--text-secondary); line-height: 1.8;
+  }
+  .log-ok  { color: var(--accent-green); }
+  .log-err { color: #ff453a; }
+  .log-info{ color: var(--accent); }
+
+  .notice { font-size: 11px; color: var(--text-secondary); text-align: center; padding: 8px; }
+
+  /* ── Slider con marca de valor óptimo ── */
+  .tick-wrap {
+    position: relative;
+    width: 120px;
+    flex-shrink: 0;
+    padding-top: 22px; /* espacio para etiqueta + línea */
+  }
+  .tick-wrap input[type="range"] { width: 100%; }
+  .opt-tick {
+    position: absolute;
+    top: 4px;
+    width: 2px;
+    height: 14px;
+    background: rgba(54,120,240,0.85);
+    border-radius: 1px;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+  .opt-tick::before {
+    content: attr(data-val);
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 8.5px;
+    color: var(--accent);
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  /* Variantes de tick */
+  .opt-tick.gam { background: rgba(255,159,10,0.85); }
+  .opt-tick.gam::before { color: #ff9f0a; }
+  .opt-tick.std { background: rgba(142,142,147,0.45); }
+  .opt-tick.std::before { color: #8e8e93; }
+
+  /* ── vbmeta ── */
+  .vbmeta-info {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 16px 10px; flex-wrap: wrap;
+  }
+  .vbstate {
+    font-size: 11px; font-weight: 600;
+    padding: 3px 9px; border-radius: 20px;
+  }
+  .vbstate.green  { background: rgba(52,199,89,0.15);  color: #34c759; }
+  .vbstate.orange { background: rgba(255,159,10,0.15); color: #ff9f0a; }
+  .vbstate.red    { background: rgba(255,69,58,0.15);  color: #ff453a; }
+  .vbstate.grey   { background: rgba(142,142,147,0.15);color: #8e8e93; }
+  .warn-box {
+    background: rgba(255,159,10,0.08);
+    border: 1px solid rgba(255,159,10,0.25);
+    border-radius: var(--radius-md);
+    padding: 10px 14px; margin: 4px 16px 10px;
+    font-size: 12px; color: #ff9f0a; line-height: 1.55;
+  }
+  .vbmeta-btns {
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 0 16px 14px;
+  }
+  .btn-vb-patch {
+    background: rgba(255,69,58,0.12); color: #ff453a;
+    border: 1px solid rgba(255,69,58,0.3);
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    padding: 12px; border-radius: var(--radius-md); cursor: pointer;
+  }
+  .btn-vb-sec {
+    background: rgba(255,255,255,0.05); color: var(--text-secondary);
+    border: 1px solid rgba(255,255,255,0.08);
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    padding: 10px; border-radius: var(--radius-md); cursor: pointer;
+  }
+  .vbmeta-section-toggle { padding: 0 16px 6px; font-size: 12px; color: var(--text-secondary); }
+  .collapsible-body { overflow: hidden; transition: max-height 0.3s ease; }
+  .collapsible-body.collapsed { max-height: 0 !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Hyper<span>Perf+</span></div>
+  <div class="subtitle">Kernel &amp; System Configurator</div>
+  <div class="badge">sr.matdroid®•HyperOS+•v1.0/GPLv3</div>
+</header>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchPage('kernel', this)">Kernel</button>
+  <button class="tab-btn" onclick="switchPage('system', this)">Tweaks</button>
+</div>
+
+<main>
+
+  <!-- ===== PÁGINA KERNEL ===== -->
+  <div id="page-kernel" class="page active">
+
+    <div class="section">
+      <div class="section-header">ZRAM</div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Tamaño</div>
+          <div class="row-desc" id="cur-zram">Cargando...</div>
+        </div>
+        <div class="row-value" id="zram-val-tag" style="font-size:15px;color:var(--text-secondary);text-align:right;">4 GB</div>
+      </div>
+      <div class="zram-row" id="zram-btns">
+        <div class="zram-chip" data-val="1073741824">1 GB</div>
+        <div class="zram-chip" data-val="2147483648">2 GB</div>
+        <div class="zram-chip" data-val="3221225472">3 GB</div>
+        <div class="zram-chip active" data-val="4294967296">4 GB</div>
+        <div class="zram-chip" data-val="5368709120">5 GB</div>
+        <div class="zram-chip" data-val="6442450944">6 GB</div>
+        <div class="zram-chip" data-val="7516192768">7 GB</div>
+        <div class="zram-chip" data-val="8589934592">8 GB</div>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Compresión</div>
+          <div class="row-desc">lzo-rle recomendado: rápido y buen ratio. lz4 si priorizas velocidad. zstd si priorizas ratio (más CPU)</div>
+        </div>
+        <select id="sel-comp">
+          <option value="lzo-rle">lzo-rle</option>
+          <option value="lzo">lzo</option>
+          <option value="lz4">lz4</option>
+          <option value="zstd">zstd</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">Memoria</div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Swappiness</div>
+          <div class="row-desc" id="cur-swap">Preferencia del kernel por usar ZRAM vs RAM física. 10–40 = prioriza RAM (gaming). 60 = equilibrio (recomendado). 100 = default Android (agresivo con ZRAM)</div>
+        </div>
+        <div class="slider-row">
+          <div class="tick-wrap">
+            <div class="opt-tick gam" data-val="10" style="left:10.0%"></div>
+            <div class="opt-tick"     data-val="60" style="left:54.4%"></div>
+            <div class="opt-tick std" data-val="100" style="left:90.0%"></div>
+            <input type="range" id="sl-swappiness" min="10" max="100" step="5" value="60">
+          </div>
+          <span class="slider-val" id="val-swappiness">60</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">I/O Scheduler</div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Planificador</div>
+          <div class="row-desc" id="cur-sched">mq-deadline recomendado para UFS. Se aplica a todos los LUNs (sda–sdf)</div>
+        </div>
+        <select id="sel-sched"></select>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">CPU Governor</div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Gobernador</div>
+          <div class="row-desc" id="cur-gov">schedutil recomendado: integrado con EAS, toma decisiones en tiempo real según carga de CFS</div>
+        </div>
+        <select id="sel-gov"></select>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">UFS Read-Ahead</div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Prefetch (Read-Ahead)</div>
+          <div class="row-desc" id="cur-ra">KB que el kernel lee por adelantado del UFS. 1024 = estándar. 2048 = recomendado (reduce pop-in de assets en juegos). 4096 = muy agresivo (más uso de RAM)</div>
+        </div>
+        <div class="slider-row">
+          <div class="tick-wrap">
+            <div class="opt-tick gam" data-val="1K"  style="left:27.9%"></div>
+            <div class="opt-tick"     data-val="2K"  style="left:48.7%"></div>
+            <input type="range" id="sl-readahead" min="128" max="4096" step="128" value="2048">
+          </div>
+          <span class="slider-val" id="val-readahead">2048</span>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="section">
+      <div class="row" style="cursor:pointer;" onclick="toggleVbmeta(this)">
+        <div class="row-left">
+          <div class="row-title">vbmeta / AVB</div>
+          <div class="row-desc" id="vb-state-desc">Cargando estado de verificación...</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span id="vb-badge" class="vbstate grey">···</span>
+          <span id="vb-chevron" style="color:var(--text-secondary);font-size:12px;transition:transform 0.25s;">▶</span>
+        </div>
+      </div>
+      <div class="collapsible-body collapsed" id="vb-body" style="max-height:600px;">
+        <div class="vbmeta-info" id="vb-flags-info">
+          <span style="font-size:11px;color:var(--text-secondary);">Flags partición vbmeta:</span>
+          <span id="vb-flags-badge" class="vbstate grey">leyendo...</span>
+        </div>
+        <div class="warn-box">
+          ⚠️ <strong>Solo si lo necesitas.</strong> Parchear vbmeta desactiva la verificación AVB. Requerido si el kernel o recovery modificado causa bootloop por AVB. <strong>Haz siempre un backup antes.</strong> Requiere reinicio para tener efecto.
+        </div>
+        <div class="vbmeta-btns">
+          <button class="btn-vb-sec" onclick="vbBackup()">📦 Backup vbmeta → /data/adb/vbmeta_backup.img</button>
+          <button class="btn-vb-patch" onclick="vbPatch()" id="btn-vb-patch">🔓 Parchear vbmeta (deshabilitar AVB)</button>
+          <button class="btn-vb-sec" onclick="vbRestore()" id="btn-vb-restore">🔄 Restaurar backup de vbmeta</button>
+        </div>
+        <div class="log-area" id="log-vbmeta" style="margin:0 16px 12px;"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">BORE Scheduler</div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">BORE</div>
+          <div class="row-desc" id="cur-bore">Budget Oriented Response Enhancement. Prioriza tareas interactivas en cargas mixtas. Reduce latencia perceptible en gaming + carga de fondo. Solo disponible si el kernel lo incluye</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="kern-bore" onchange="applyBore(this.checked)"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">Registro</div>
+      <div class="log-area" id="log"></div>
+    </div>
+
+    <div class="notice">Los cambios se aplican en caliente y se guardan para el reinicio.</div>
+    <button class="btn-apply" id="btn-apply" onclick="applyConfig()">Aplicar y Guardar</button>
+  </div>
+
+  <!-- ===== PÁGINA SYSTEM TWEAKS ===== -->
+  <div id="page-system" class="page">
+
+    <!-- GAMING -->
+    <div class="section">
+      <div class="section-header">Gaming</div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Game Turbo MIGT</div>
+          <div class="row-desc">Motor de HyperOS para juegos. Gestiona CPU, GPU y RAM al detectar una sesión de juego activa</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-migt" onchange="applySysToggle('persist.miui.migt.enable', this.checked, '1', '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">MIGT Game Boost</div>
+          <div class="row-desc">Boost adicional de CPU/GPU dentro de Game Turbo. Activar junto con Game Turbo MIGT</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-migt-boost" onchange="applySysToggle('persist.miui.migt.game_boost', this.checked, '1', '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Adreno Preemption OFF</div>
+          <div class="row-desc">Desactiva la interrupción del GPU Adreno entre draw calls. Elimina stutters en juegos 3D densos. Solo Snapdragon</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-adreno-preempt" onchange="applySysToggle('debug.adreno.preemption.disable', this.checked, '1', '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">FIFO UI Scheduler</div>
+          <div class="row-desc">Hilo principal de UI con prioridad FIFO. Reduce jank y mejora fluidez de la interfaz en situaciones de carga</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-fifo-ui" onchange="applySysProp('sys.use_fifo_ui', this.checked ? 'true' : 'false')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Adreno LRZ</div>
+          <div class="row-desc">Low Resolution Z-buffering. Descarta píxeles ocultos antes de renderizarlos. Mejora FPS en escenas 3D densas</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-adreno-lrz" onchange="applySysToggle('debug.adreno.lrz.enable', this.checked, '1', '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Adreno GPU Pool (MB)</div>
+          <div class="row-desc">Pool de memoria disponible para el GPU Adreno. 256 = conservador. 512 = recomendado (equilibrio). 1024 = máximo (mejor en juegos 3D pesados, menos RAM libre)</div>
+        </div>
+        <div class="slider-row">
+          <div class="tick-wrap">
+            <div class="opt-tick"     data-val="512"  style="left:44.3%"></div>
+            <div class="opt-tick std" data-val="1024" style="left:90.0%"></div>
+            <input type="range" id="sys-adreno-mem" min="128" max="1024" step="64" value="512"
+              oninput="updateSlider('val-adreno-mem', this.value); applySysProp('debug.adreno.mem.mb', this.value)">
+          </div>
+          <span class="slider-val" id="val-adreno-mem">512</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Boost render app</div>
+          <div class="row-desc">Prioridad de CPU al hilo de render de la app en primer plano. Reduce stutters en apps y juegos activos</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-render-boost" onchange="applySysToggle('persist.sys.perf.topAppRenderThreadBoost.enable', this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Job Delay Background</div>
+          <div class="row-desc">Retrasa trabajos de apps en segundo plano para priorizar la app activa. Reduce microcortes durante el juego</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-job-delay" onchange="applySysToggle('persist.sys.job_delay', this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Adreno Syncobj Timeline</div>
+          <div class="row-desc">Reduce la latencia de flush de comandos GPU. Mejora el pipeline entre CPU y GPU en juegos con muchos draw calls</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-adreno-sync" onchange="applySysToggle('debug.adreno.syncobj_timeline', this.checked, '1', '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Adreno GPU BIMC Clock</div>
+          <div class="row-desc">Reduce stalls de memoria entre CPU y GPU durante streaming de assets. Solo Snapdragon</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-adreno-bimc" onchange="applySysToggle('debug.adreno.gpu_bimc_clk', this.checked, '1', '0')"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <!-- ANIMACIONES -->
+    <div class="section">
+      <div class="section-header">Animaciones</div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Escala de ventana</div>
+          <div class="row-desc">Velocidad de animaciones de ventana. 0 = sin animación, 1.0 = stock</div>
+        </div>
+        <select id="sys-window-scale" onchange="applySysProp('persist.sys.window_animation_scale', this.value)">
+          <option value="0">0</option><option value="0.4">0.4</option><option value="1.0">1.0</option><option value="1.5">1.5</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Transición</div>
+          <div class="row-desc">Velocidad de animaciones entre apps y actividades</div>
+        </div>
+        <select id="sys-transition-scale" onchange="applySysProp('persist.sys.transition_animation_scale', this.value)">
+          <option value="0">0</option><option value="0.4">0.4</option><option value="1.0">1.0</option><option value="1.5">1.5</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Duración animador</div>
+          <div class="row-desc">Duración general de animaciones del sistema (ObjectAnimator, ValueAnimator)</div>
+        </div>
+        <select id="sys-animator-scale" onchange="applySysProp('persist.sys.animator_duration_scale', this.value)">
+          <option value="0">0</option><option value="0.4">0.4</option><option value="1.0">1.0</option><option value="1.5">1.5</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Fling velocity</div>
+          <div class="row-desc">Velocidad máxima de scroll al hacer fling. Mayor = scroll más rápido</div>
+        </div>
+        <select id="sys-fling" onchange="applySysProp('ro.max.fling_velocity', this.value)">
+          <option value="8000">8000</option><option value="12000">12000</option><option value="15000">15000</option><option value="20000">20000</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Umbral anim SW MIUI</div>
+          <div class="row-desc">% de CPU antes de que MIUI pase animaciones a software rendering. Subir si hay drops en animaciones bajo carga</div>
+        </div>
+        <select id="sys-miui-anim-sw" onchange="applySysProp('persist.sys.miui.anim_sw_threshold', this.value)">
+          <option value="50">50%</option><option value="68">68%</option><option value="80">80%</option><option value="100">100%</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- GPU Y RENDIMIENTO -->
+    <div class="section">
+      <div class="section-header">GPU y Rendimiento</div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Desactivar Blur</div>
+          <div class="row-desc">Elimina el desenfoque en Control Center, recientes y notificaciones. Reduce carga en SurfaceFlinger</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-blur-off" onchange="applyBlurToggle(this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Tuning global</div>
+          <div class="row-desc">Activa el modo tuning de rendimiento general. Habilita optimizaciones internas del subsistema gráfico</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-perf-tuning" onchange="applySysToggle('debug.performance.tuning', this.checked, '1', '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">MIUI Booster</div>
+          <div class="row-desc">Acelerador de rendimiento de HyperOS/MIUI. Gestiona CPU/RAM proactivamente en apps prioritarias</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-miui-booster" onchange="applySysToggle('persist.sys.miui_booster', this.checked, '1', '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Composición GPU</div>
+          <div class="row-desc">Fuerza composición por GPU ignorando el HWC. Mejor para Vulkan, pero puede romper vídeos en redes sociales</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-gpu-compose" onchange="applySysToggle('persist.sys.composition.type', this.checked, 'gpu', 'mdp')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">HWUI Renderer</div>
+          <div class="row-desc">skiavk = backend Vulkan para HWUI (sistema). skiagl = backend OpenGL. El módulo lo gestiona dinámicamente en juegos</div>
+        </div>
+        <select id="sys-hwui-renderer" onchange="applySysProp('debug.hwui.renderer', this.value)">
+          <option value="skiavk">skiavk (Vulkan)</option><option value="skiagl">skiagl (OpenGL)</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">SF Transaction Tracing OFF</div>
+          <div class="row-desc">Desactiva el tracing de transacciones de SurfaceFlinger. Elimina overhead de logging del compositor</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-sf-trace-off" onchange="applySysToggle('debug.sf.enable_transaction_tracing', this.checked, 'false', 'true')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Reuse Layer Content</div>
+          <div class="row-desc">SF reutiliza capas no modificadas entre frames. Reduce trabajo del compositor cuando pocas capas cambian</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-sf-reuse" onchange="applySysToggle('debug.sf.reuse_layer_content', this.checked, '1', '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">SF Idle Timer (ms)</div>
+          <div class="row-desc">Tiempo antes de bajar la tasa de refresco por inactividad. 0 = SF nunca baja Hz por inactividad</div>
+        </div>
+        <select id="sys-sf-idle" onchange="applySysProp('ro.surface_flinger.set_idle_timer_ms', this.value)">
+          <option value="0">0 (OFF)</option><option value="80">80 ms</option><option value="100">100 ms</option><option value="200">200 ms</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Early App Phase Offset (ns)</div>
+          <div class="row-desc">Adelanta el momento en que la app empieza a producir el frame respecto al ciclo de SF</div>
+        </div>
+        <select id="sys-app-phase" onchange="applySysProp('debug.sf.early_app_phase_offset_ns', this.value)">
+          <option value="0">0</option><option value="300000">300 µs</option><option value="500000">500 µs</option><option value="1000000">1 ms</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- SURFACEFLINGER / DISPLAY -->
+    <div class="section">
+      <div class="section-header">SurfaceFlinger / Display</div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">VSync SF MIUI</div>
+          <div class="row-desc">Habilita VSync en SurfaceFlinger para MIUI. Sincroniza frames con el refresco del display</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-sf-vsync" onchange="applySysToggle('persist.sys.miui.sf.vsync', this.checked, '1', '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Backpressure OFF</div>
+          <div class="row-desc">SF no espera a que la app rellene el buffer antes de presentar. Puede reducir latencia a costa de posibles frames vacíos</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-sf-backpressure" onchange="applySysProp('debug.sf.disable_backpressure', this.checked ? '1' : '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Framebuffers (triple buffering)</div>
+          <div class="row-desc">Número de framebuffers en la cadena de presentación. 3 = triple buffering, reduce tearing</div>
+        </div>
+        <select id="sys-egl-fbcount" onchange="applySysProp('debug.gr.num_framebuffer_frames', this.value)">
+          <option value="2">2</option><option value="3">3 (triple)</option><option value="4">4</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Buffers EGL</div>
+          <div class="row-desc">Buffers en la cadena de swap EGL. 4 = quad buffering, mejora fluidez en alta carga gráfica</div>
+        </div>
+        <select id="sys-egl-buffers" onchange="applySysProp('debug.egl.buffercount', this.value)">
+          <option value="3">3</option><option value="4">4 (quad)</option><option value="5">5</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Early phase offset SF (ns)</div>
+          <div class="row-desc">Offset de fase anticipada de SurfaceFlinger. Adelanta el momento en que SF empieza a componer el frame</div>
+        </div>
+        <select id="sys-sf-phase" onchange="applySysProp('debug.sf.early_phase_offset_ns', this.value)">
+          <option value="0">0</option><option value="300000">300 µs</option><option value="500000">500 µs</option><option value="1000000">1 ms</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- AUDIO AVANZADO -->
+    <div class="section">
+      <div class="section-header">Audio Avanzado</div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">A2DP HiFi BT</div>
+          <div class="row-desc">Modo HiFi para Bluetooth A2DP. Fuerza bitrates más altos. No usar con HiFi de DAC interno (rompe BT)</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-bt-hifi" onchange="applySysToggle('persist.audio.bt.a2dp.hifi', this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Calidad LDAC</div>
+          <div class="row-desc">HQ = 990 kbps máximo. SQ = equilibrado. Auto = ajusta según calidad de señal BT</div>
+        </div>
+        <select id="sys-ldac-quality" onchange="applySysProp('persist.bluetooth.a2dp.ldac.quality', this.value)">
+          <option value="auto">Auto</option><option value="sq">SQ</option><option value="hq">HQ</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Audio offload buffer (KB)</div>
+          <div class="row-desc">Tamaño del buffer de audio offload al DSP. Más KB = más estabilidad, más latencia. 640 recomendado</div>
+        </div>
+        <select id="sys-offload-buf" onchange="applySysProp('audio.offload.buffer.size.kb', this.value)">
+          <option value="256">256</option><option value="440">440</option><option value="640">640</option><option value="1024">1024</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Calidad resampler</div>
+          <div class="row-desc">Calidad del resampler de AudioFlinger (0-8). Mayor = mejor calidad, más CPU. 5 es buen equilibrio</div>
+        </div>
+        <select id="sys-resampler" onchange="applySysProp('af.resampler.quality', this.value)">
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="8">8</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Deep buffer media</div>
+          <div class="row-desc">Buffer profundo para reproducción de audio continuo. Puede aumentar latencia inicial de audio</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-deep-buffer" onchange="applySysToggle('audio.deep_buffer.media', this.checked, '1', '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Offload múltiple DSP</div>
+          <div class="row-desc">Múltiples streams de audio offload simultáneos en el DSP Snapdragon. Solo Qualcomm</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-offload-multi" onchange="applySysProp('persist.vendor.audio.offload.multiple.enabled', this.checked ? 'true' : 'false')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Gapless playback</div>
+          <div class="row-desc">Reproducción sin salto ni silencio entre pistas de audio offload. Esencial para música continua</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-gapless" onchange="applySysProp('audio.offload.gapless.enabled', this.checked ? 'true' : 'false')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">PCM quality</div>
+          <div class="row-desc">Calidad de captura PCM. High activa captura en alta resolución para apps que lo soporten</div>
+        </div>
+        <select id="sys-pcm-quality" onchange="applySysProp('audio.playback.capture.pcm.quality', this.value)">
+          <option value="low">low</option><option value="high">high</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">AudioFlinger Standby (ms)</div>
+          <div class="row-desc">Tiempo antes de que AudioFlinger entre en standby. 3000ms evita el lag de reconexión al reanudar audio</div>
+        </div>
+        <select id="sys-af-standby" onchange="applySysProp('ro.audio.flinger_standbytime_ms', this.value)">
+          <option value="1000">1000</option><option value="3000">3000 (recomendado)</option><option value="5000">5000</option><option value="10000">10000</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">PCM Callback Buffer</div>
+          <div class="row-desc">Tamaño del callback buffer de PCM. Menor = menos latencia. 128 es el balance recomendado</div>
+        </div>
+        <select id="sys-pcm-cb" onchange="applySysProp('ro.audio.pcm.cb.size', this.value)">
+          <option value="64">64</option><option value="128">128</option><option value="256">256</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Voice Enhance</div>
+          <div class="row-desc">Claridad vocal mejorada. Experimental, depende del vendor audio HAL. Solo Snapdragon</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-voice-enhance" onchange="applySysToggle('ro.vendor.audio.voice.enhance', this.checked, '1', '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Surround Audio</div>
+          <div class="row-desc">Soporte de audio envolvente. Experimental, depende del vendor audio HAL del dispositivo</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-surround" onchange="applySysToggle('ro.vendor.audio.surround.support', this.checked, 'true', 'false')"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <!-- BLUETOOTH -->
+    <div class="section">
+      <div class="section-header">Bluetooth</div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">AAC VBR</div>
+          <div class="row-desc">Variable Bit Rate para codec AAC. Mejor calidad en auriculares AAC sin el overhead de LDAC</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-aac-vbr" onchange="applySysProp('persist.bluetooth.a2dp.aac_vbr', this.checked ? 'true' : 'false')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">AAC Frame Control</div>
+          <div class="row-desc">Control de frames para AAC. Mejora sincronización y reduce artefactos en la transmisión</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-aac-frame" onchange="applySysProp('persist.bluetooth.a2dp.aac_frame_ctl', this.checked ? 'true' : 'false')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">LDAC ABR</div>
+          <div class="row-desc">Adaptive Bit Rate para LDAC. Reduce cortes ajustando la calidad según la estabilidad de la señal BT</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-ldac-abr" onchange="applySysProp('persist.bluetooth.a2dp.ldac.abr', this.checked ? 'true' : 'false')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Whitelist AAC</div>
+          <div class="row-desc">Lista blanca de dispositivos para negociar AAC. Fuerza AAC aunque el dispositivo no lo declare correctamente</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-aac-whitelist" onchange="applySysProp('persist.bluetooth.a2dp.aac_whitelist', this.checked ? 'true' : 'false')"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <!-- RED Y TCP -->
+    <div class="section">
+      <div class="section-header">Red y TCP</div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Congestión TCP</div>
+          <div class="row-desc" id="cur-tcp-cc-live">BBR mejora latencia y throughput en LTE/5G. BBR+ más agresivo. Cubic es el default del kernel</div>
+        </div>
+        <select id="sys-tcp-cc" onchange="applyTcpCongestion(this.value)">
+          <option value="bbr">BBR</option><option value="bbrplus">BBR Plus</option>
+          <option value="cubic">CUBIC</option><option value="reno">RENO</option><option value="westwood">Westwood</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">TCP Fast Open</div>
+          <div class="row-desc">Reduce la latencia del handshake TCP enviando datos en el primer SYN. Necesario para BBR</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-tcp-fastopen" onchange="applySysFile('/proc/sys/net/ipv4/tcp_fastopen', this.checked ? '3' : '1')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">ECN</div>
+          <div class="row-desc">Explicit Congestion Notification. Notifica congestión sin perder paquetes. Bueno con BBR en 5G</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-tcp-ecn" onchange="applySysFile('/proc/sys/net/ipv4/tcp_ecn', this.checked ? '1' : '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">TCP Window Scaling</div>
+          <div class="row-desc">Permite ventanas de recepción superiores a 64 KB. Necesario para aprovechar rmem_max alto</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-tcp-wscale" onchange="applySysFile('/proc/sys/net/ipv4/tcp_window_scaling', this.checked ? '1' : '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">MTU Probing</div>
+          <div class="row-desc">Detecta automáticamente el MTU óptimo. Evita fragmentación en 5G SA donde el MTU puede variar</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-tcp-mtu" onchange="applySysFile('/proc/sys/net/ipv4/tcp_mtu_probing', this.checked ? '1' : '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">TCP SACK</div>
+          <div class="row-desc">Selective ACK: retransmite solo los paquetes perdidos en lugar de toda la ventana. Básico para LTE/5G</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-tcp-sack" onchange="applySysFile('/proc/sys/net/ipv4/tcp_sack', this.checked ? '1' : '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">TCP TW Reuse</div>
+          <div class="row-desc">Reutiliza sockets en estado TIME_WAIT para nuevas conexiones. Reduce el agotamiento de puertos</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-tcp-twreuse" onchange="applySysFile('/proc/sys/net/ipv4/tcp_tw_reuse', this.checked ? '1' : '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Recuperación datos</div>
+          <div class="row-desc">Reconexión automática de datos móviles al perder y recuperar señal</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-data-recovery" onchange="applySysProp('persist.radio.data_con_recovery', this.checked ? 'true' : 'false')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Google Checkin OFF</div>
+          <div class="row-desc">Desactiva el checkin periódico de Google. Reduce tráfico de fondo y despertares de red innecesarios</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-no-checkin" onchange="applySysToggle('ro.config.nocheckin', this.checked, '1', '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Data No Toggle</div>
+          <div class="row-desc">Evita el toggle de datos durante reconexiones del modem. Reduce cortes en cambios de celda</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-data-no-toggle" onchange="applySysToggle('persist.radio.data_no_toggle', this.checked, '1', '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Radio Power Save OFF</div>
+          <div class="row-desc">Desactiva el ahorro de energía adicional del modem. Señal más estable a costa de algo de batería</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-radio-ps" onchange="applySysToggle('persist.radio.add_power_save', this.checked, '0', '1')"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <!-- KERNEL VM -->
+    <div class="section">
+      <div class="section-header">Kernel VM</div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">VFS Cache Pressure</div>
+          <div class="row-desc">Agresividad al liberar caché de filesystem. 50 = retiene más caché (apps abiertas más rápido). 100 = default kernel. 200 = descarga caché agresivamente (más RAM libre)</div>
+        </div>
+        <div class="slider-row">
+          <div class="tick-wrap">
+            <div class="opt-tick gam" data-val="50"  style="left:26.8%"></div>
+            <div class="opt-tick std" data-val="100" style="left:47.9%"></div>
+            <input type="range" id="sys-vfs-pressure" min="10" max="200" step="10" value="100"
+              oninput="updateSlider('val-vfs-pressure', this.value); applySysFile('/proc/sys/vm/vfs_cache_pressure', this.value)">
+          </div>
+          <span class="slider-val" id="val-vfs-pressure">100</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Dirty Ratio</div>
+          <div class="row-desc">% de RAM con datos sin escribir al UFS antes de forzar flush. 10 = flush frecuente (más escrituras, menor riesgo de pérdida). 20 = recomendado (balance). 40+ = agresivo (mejor throughput, más riesgo ante corte de luz)</div>
+        </div>
+        <div class="slider-row">
+          <div class="tick-wrap">
+            <div class="opt-tick std" data-val="10" style="left:18.9%"></div>
+            <div class="opt-tick"     data-val="20" style="left:36.7%"></div>
+            <div class="opt-tick gam" data-val="40" style="left:71.4%"></div>
+            <input type="range" id="sys-dirty-ratio" min="5" max="50" step="5" value="20"
+              oninput="updateSlider('val-dirty-ratio', this.value); applySysFile('/proc/sys/vm/dirty_ratio', this.value)">
+          </div>
+          <span class="slider-val" id="val-dirty-ratio">20</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MIUI / HYPEROS -->
+    <div class="section">
+      <div class="section-header">MIUI / HyperOS</div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">SPTM</div>
+          <div class="row-desc">System Performance & Thermal Management clásico de MIUI. Gestiona rendimiento según temperatura</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-sptm" onchange="applySysToggle('persist.sys.miui_sptm.enable', this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">SPTM nuevo</div>
+          <div class="row-desc">Versión nueva del SPTM con algoritmos de gestión de rendimiento actualizados</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-sptm-new" onchange="applySysToggle('persist.sys.miui_sptm_new.enable', this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Ignorar cloud overrides</div>
+          <div class="row-desc">Evita que los servidores de Xiaomi modifiquen parámetros de rendimiento y modo RT remotamente</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-cloud-override" onchange="applySysToggle('persist.sys.enable_ignorecloud_rtmode', this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Smart Focus I/O</div>
+          <div class="row-desc">Prioriza las operaciones de I/O de la app activa. Reduce la latencia de carga de assets en primer plano</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-smart-focus" onchange="applySysProp('persist.sys.stability.smartfocusio', this.checked ? 'on' : 'off')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Freeform speed up</div>
+          <div class="row-desc">Acelera el renderizado de ventanas en modo freeform (ventanas flotantes)</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-freeform" onchange="applySysToggle('persist.miui.speed_up_freeform', this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Home reutiliza proceso</div>
+          <div class="row-desc">Evita destruir el proceso del launcher al salir. Reduce el tiempo de vuelta al inicio</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-home-reuse" onchange="applySysToggle('persist.miui.home_reuse_leash', this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">MIUI Optimization</div>
+          <div class="row-desc">Optimizaciones internas de MIUI/HyperOS. Desactivar puede mejorar compatibilidad con apps no-MIUI</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-miui-opt" onchange="applySysToggle('persist.sys.miui_optimization', this.checked, 'true', 'false')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">MIRIM OFF</div>
+          <div class="row-desc">Desactiva el Mirror Rendering de MIUI. Reduce overhead en animaciones complejas de capas</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-mirim" onchange="applySysToggle('persist.sys.mirim.enable', this.checked, 'false', 'true')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">SPTM Ignore Cloud</div>
+          <div class="row-desc">Fuerza que el SPTM ignore overrides de rendimiento desde los servidores de Xiaomi</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-sptm-cloud" onchange="applySysToggle('persist.sys.miui_sptm.ignore_cloud_enable', this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">SPTM Animation OFF</div>
+          <div class="row-desc">Desactiva animaciones propias del SPTM. Elimina overhead visual añadido por el gestor térmico</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-sptm-anim" onchange="applySysToggle('persist.sys.miui_sptm_animation.enable', this.checked, 'false', 'true')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Boot Compact</div>
+          <div class="row-desc">Compacta memoria al arranque para liberar RAM rápidamente y reducir el footprint inicial</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-boot-compact" onchange="applySysToggle('persist.sys.use_boot_compact', this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Slow Startup Mode OFF</div>
+          <div class="row-desc">Desactiva el modo de arranque lento de MIUI. Permite usar todos los recursos al lanzar apps</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-slow-startup" onchange="applySysToggle('persist.sys.miui_slow_startup_mode.enable', this.checked, 'false', 'true')"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <!-- CÁMARA -->
+    <div class="section">
+      <div class="section-header">Cámara</div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Fast launch</div>
+          <div class="row-desc">Pre-carga recursos de la cámara para reducir el tiempo desde que pulsas hasta que está lista</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-cam-fast" onchange="applySysToggle('persist.vendor.camera.enable_fast_launch', this.checked, '1', '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">HFR perf</div>
+          <div class="row-desc">Perfiles de alto rendimiento para grabación en slow-motion (HFR). Solo Snapdragon</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-cam-hfr" onchange="applySysToggle('persist.vendor.camera.perf.hfr.enable', this.checked, '1', '0')"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <!-- SISTEMA -->
+    <div class="section">
+      <div class="section-header">Sistema</div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">I/O Predictivo (iorapd)</div>
+          <div class="row-desc">Prefetch predictivo de I/O. El sistema aprende los patrones de carga de cada app y pre-lee datos antes de que los necesites</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-iorapd" onchange="applyIorapd(this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Video Hardware Accel</div>
+          <div class="row-desc">Decodificación y reproducción de vídeo por hardware. Desactivar solo si hay problemas con reproductores</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-video-hw" onchange="applySysToggle('video.accelerate.hw', this.checked, '1', '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">No Touch Resampling</div>
+          <div class="row-desc">Desactiva el resampling de eventos táctiles. Menor latencia táctil, posible irregularidad en movimiento del puntero</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-no-resample" onchange="applySysToggle('ro.input.noresample', this.checked, '1', '0')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Purgeable Assets OFF</div>
+          <div class="row-desc">Evita que el sistema descarte assets en memoria para reciclaje. Mantiene assets cargados más tiempo a costa de algo de RAM</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-purgeable" onchange="applySysToggle('persist.sys.purgeable_assets', this.checked, '0', '1')"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <!-- TÉRMICA -->
+    <div class="section">
+      <div class="section-header">Térmica</div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Desactivar perfil vendor</div>
+          <div class="row-desc">Desactiva el perfil térmico personalizado del fabricante. El kernel usa sus propios umbrales</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="sys-thermal-config" onchange="applySysToggle('persist.sys.thermal.config', this.checked, '0', '1')"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Warm limit (°C)</div>
+          <div class="row-desc">Temperatura a la que el sistema empieza a emitir avisos térmicos (en décimas de grado)</div>
+        </div>
+        <select id="sys-thermal-warm" onchange="applySysProp('ro.thermal.warm_limit', this.value)">
+          <option value="500">50°C</option><option value="550">55°C</option><option value="600">60°C</option><option value="650">65°C</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Cool limit (°C)</div>
+          <div class="row-desc">Temperatura objetivo de enfriamiento activo. El sistema intenta bajar hasta este valor</div>
+        </div>
+        <select id="sys-thermal-cool" onchange="applySysProp('ro.thermal.cool_limit', this.value)">
+          <option value="400">40°C</option><option value="450">45°C</option><option value="500">50°C</option><option value="550">55°C</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- DALVIK / ART -->
+    <div class="section">
+      <div class="section-header">Dalvik / ART</div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">dex2oat threads</div>
+          <div class="row-desc">Hilos para compilar apps con dex2oat. Más hilos = compilación más rápida al instalar apps</div>
+        </div>
+        <select id="sys-dex2oat-threads" onchange="applySysProp('dalvik.vm.dex2oat-threads', this.value)">
+          <option value="4">4</option><option value="6">6</option><option value="8">8</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Filtro dex2oat</div>
+          <div class="row-desc">speed = compila más código AOT, apps arrancan más rápido. space = menos almacenamiento. balanced = intermedio</div>
+        </div>
+        <select id="sys-dex2oat-filter" onchange="applySysProp('dalvik.vm.dex2oat-filter', this.value)">
+          <option value="speed">speed</option><option value="balanced">balanced</option><option value="space">space</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Heap target utilization</div>
+          <div class="row-desc">Porcentaje de uso del heap de ART antes de lanzar el GC. Mayor = menos GC, más RAM usada</div>
+        </div>
+        <select id="sys-heap-util" onchange="applySysProp('dalvik.vm.heaptargetutilization', this.value)">
+          <option value="0.6">0.6 (conservador)</option><option value="0.75">0.75 (recomendado)</option><option value="0.9">0.9 (agresivo)</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-title">Heap size</div>
+          <div class="row-desc">Tamaño máximo del heap de ART por proceso. Más MB = apps más pesadas sin OOM, más RAM usada</div>
+        </div>
+        <select id="sys-heap-size" onchange="applySysProp('dalvik.vm.heapsize', this.value)">
+          <option value="512m">512 MB</option><option value="768m">768 MB</option><option value="1024m">1024 MB</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- LOG Y BOTÓN -->
+    <div class="section">
+      <div class="section-header">Registro</div>
+      <div class="log-area" id="log-system"></div>
+    </div>
+
+    <div class="notice">⚠️ Los cambios se aplican al instante. Pulsa para persistirlos al reinicio.</div>
+    <button class="btn-apply" id="btn-apply-system" onclick="applySystemConfig()">Aplicar y Guardar Tweaks</button>
+  </div>
+
+</main>
+
+<script>
+const CONF = '/data/adb/modules/sr.mat/hypervulkan.conf';
+
+// ── KSU exec ─────────────────────────────────────────────────
+let _cbSeq = 0;
+function exec(cmd) {
+  return new Promise((resolve) => {
+    if (typeof ksu === 'undefined') { resolve({ errno: 0, stdout: '', stderr: '' }); return; }
+    const cbName = '__ksucb' + (_cbSeq++);
+    const timer = setTimeout(() => { delete window[cbName]; resolve({ errno: 1, stdout: '', stderr: 'timeout' }); }, 15000);
+    window[cbName] = (errno, stdout, stderr) => {
+      clearTimeout(timer); delete window[cbName];
+      resolve({ errno: parseInt(errno) || 0, stdout: stdout || '', stderr: stderr || '' });
+    };
+    try { ksu.exec(cmd, cbName); } catch(e1) {
+      clearTimeout(timer); delete window[cbName];
+      try {
+        Promise.resolve(ksu.exec(cmd)).then(r => {
+          if (r && typeof r === 'object' && 'stdout' in r) resolve(r);
+          else resolve({ errno: 0, stdout: String(r || ''), stderr: '' });
+        }).catch(() => resolve({ errno: 1, stdout: '', stderr: String(e1) }));
+      } catch(e2) { resolve({ errno: 1, stdout: '', stderr: String(e2) }); }
+    }
+  });
+}
+
+// ── Log ──────────────────────────────────────────────────────
+function log(msg, type, target) {
+  const area = document.getElementById(target || 'log');
+  if (!area) return;
+  const ts = new Date().toLocaleTimeString('es', { hour12: false });
+  const line = document.createElement('div');
+  line.innerHTML = '<span style="color:#636366">[' + ts + ']</span> <span class="log-' +
+    (type === 'ok' ? 'ok' : type === 'err' ? 'err' : 'info') + '">' + msg + '</span>';
+  area.appendChild(line);
+  area.scrollTop = area.scrollHeight;
+}
+
+// ── Tabs ─────────────────────────────────────────────────────
+function switchPage(page, el) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  if (el) el.classList.add('active');
+}
+
+// ── Prop helpers ─────────────────────────────────────────────
+async function applySysProp(prop, value) {
+  const r = await exec('resetprop -n ' + prop + ' ' + value);
+  if (r.errno === 0) log(prop + '=' + value, 'ok', 'log-system');
+  else log('Error ' + prop + ': ' + (r.stderr || r.errno), 'err', 'log-system');
+  // Efecto extra para BT HiFi
+  if (prop === 'persist.audio.bt.a2dp.hifi')
+    await exec('settings put global a2dp_hifi_enable ' + value);
+}
+
+async function applySysToggle(prop, enabled, valOn, valOff) {
+  const val = enabled ? (valOn !== undefined ? valOn : 'true')
+                      : (valOff !== undefined ? valOff : 'false');
+  await applySysProp(prop, val);
+}
+
+async function applySysFile(path, value) {
+  const r = await exec('echo ' + value + ' > ' + path);
+  if (r.errno === 0) log(path + ' = ' + value, 'ok', 'log-system');
+  else log('Error ' + path + ': ' + (r.stderr || r.errno), 'err', 'log-system');
+}
+
+async function applyTcpCongestion(algo) {
+  await applySysFile('/proc/sys/net/ipv4/tcp_congestion_control', algo);
+  await applySysProp('net.tcp.default_tcp_congestion_control', algo);
+  document.getElementById('cur-tcp-cc-live').textContent = 'activo: ' + algo;
+}
+
+async function applyBore(enabled) {
+  const val = enabled ? '1' : '0';
+  const r = await exec('[ -f /proc/sys/kernel/sched_bore ] && echo ' + val + ' > /proc/sys/kernel/sched_bore');
+  if (r.errno === 0) log('BORE ' + (enabled ? 'activado' : 'desactivado'), 'ok');
+  else log('BORE no disponible en este kernel', 'warn');
+}
+
+async function applyIorapd(enabled) {
+  const val = enabled ? 'true' : 'false';
+  await exec('resetprop -n ro.iorapd.enable ' + val);
+  await exec('resetprop -n persist.iorapd.enable ' + val);
+  log('iorapd ' + (enabled ? 'activado' : 'desactivado'), 'ok', 'log-system');
+}
+
+// ── vbmeta / AVB ─────────────────────────────────────────────
+function toggleVbmeta(rowEl) {
+  const body    = document.getElementById('vb-body');
+  const chevron = document.getElementById('vb-chevron');
+  const isOpen  = !body.classList.contains('collapsed');
+  body.classList.toggle('collapsed', isOpen);
+  chevron.style.transform = isOpen ? '' : 'rotate(90deg)';
+}
+
+async function loadVbmetaState() {
+  // Estado de arranque verificado
+  const r1 = await exec('resetprop ro.boot.verifiedbootstate 2>/dev/null');
+  const vbs = (r1.stdout || '').trim();
+  const badge = document.getElementById('vb-badge');
+  const desc  = document.getElementById('vb-state-desc');
+  if (vbs === 'green') {
+    badge.textContent = 'VERIFIED'; badge.className = 'vbstate green';
+    desc.textContent  = 'AVB activo — boot verificado (verde). Sin modificaciones de firmware detectadas.';
+  } else if (vbs === 'orange') {
+    badge.textContent = 'UNLOCKED'; badge.className = 'vbstate orange';
+    desc.textContent  = 'AVB naranja — bootloader desbloqueado o ROM/kernel no firmado.';
+  } else if (vbs === 'red') {
+    badge.textContent = 'FAILED'; badge.className = 'vbstate red';
+    desc.textContent  = 'AVB rojo — verificación fallida. El sistema no confía en el firmware actual.';
+  } else {
+    badge.textContent = vbs || 'desconocido'; badge.className = 'vbstate grey';
+    desc.textContent  = 'Estado AVB: ' + (vbs || 'no disponible');
+  }
+
+  // Flags de la partición vbmeta (offset 0x78 = 120 en el header)
+  const r2 = await exec('dd if=/dev/block/by-name/vbmeta bs=1 skip=120 count=4 2>/dev/null | od -A n -t u4 | tr -d " \\n"');
+  const flags = parseInt((r2.stdout || '').trim()) || null;
+  const fb = document.getElementById('vb-flags-badge');
+  if (flags === null) {
+    fb.textContent = 'no accesible'; fb.className = 'vbstate grey';
+  } else if (flags === 0) {
+    fb.textContent = '0x00 — verificación ON'; fb.className = 'vbstate green';
+  } else if (flags === 2) {
+    fb.textContent = '0x02 — hashtree off'; fb.className = 'vbstate orange';
+  } else if (flags === 3) {
+    fb.textContent = '0x03 — AVB desactivado'; fb.className = 'vbstate orange';
+  } else {
+    fb.textContent = '0x' + flags.toString(16).padStart(2,'0'); fb.className = 'vbstate grey';
+  }
+
+  // Habilitar/deshabilitar restore según si existe backup
+  const r3 = await exec('[ -f /data/adb/vbmeta_backup.img ] && echo "exists"');
+  document.getElementById('btn-vb-restore').disabled = !(r3.stdout || '').includes('exists');
+}
+
+async function vbBackup() {
+  log('Haciendo backup de vbmeta...', 'info', 'log-vbmeta');
+  const r = await exec('dd if=/dev/block/by-name/vbmeta of=/data/adb/vbmeta_backup.img bs=4096 2>&1');
+  if (r.errno === 0 || (r.stdout || '').includes('registros')) {
+    log('✓ Backup guardado en /data/adb/vbmeta_backup.img', 'ok', 'log-vbmeta');
+    document.getElementById('btn-vb-restore').disabled = false;
+  } else {
+    log('✗ Error: ' + (r.stderr || r.stdout || r.errno), 'err', 'log-vbmeta');
+  }
+}
+
+async function vbPatch() {
+  log('Comprobando backup...', 'info', 'log-vbmeta');
+  const chk = await exec('[ -f /data/adb/vbmeta_backup.img ] && echo ok');
+  if (!(chk.stdout || '').includes('ok')) {
+    log('⚠️ Haz un backup primero antes de parchear.', 'err', 'log-vbmeta');
+    return;
+  }
+  log('Parcheando vbmeta (flags → 0x03)...', 'info', 'log-vbmeta');
+  // flags offset 0x78 (120): HASHTREE_DISABLED | VERIFICATION_DISABLED = 3
+  const r = await exec('printf "\\x00\\x00\\x00\\x03" | dd of=/dev/block/by-name/vbmeta bs=1 seek=120 count=4 conv=notrunc 2>&1');
+  if (r.errno === 0) {
+    log('✓ vbmeta parcheado. Reinicia para aplicar.', 'ok', 'log-vbmeta');
+    await loadVbmetaState();
+  } else {
+    log('✗ Error: ' + (r.stderr || r.stdout || r.errno), 'err', 'log-vbmeta');
+  }
+}
+
+async function vbRestore() {
+  log('Restaurando vbmeta desde backup...', 'info', 'log-vbmeta');
+  const r = await exec('dd if=/data/adb/vbmeta_backup.img of=/dev/block/by-name/vbmeta bs=4096 conv=notrunc 2>&1');
+  if (r.errno === 0 || (r.stdout || '').includes('registros')) {
+    log('✓ vbmeta restaurado. Reinicia para aplicar.', 'ok', 'log-vbmeta');
+    await loadVbmetaState();
+  } else {
+    log('✗ Error: ' + (r.stderr || r.stdout || r.errno), 'err', 'log-vbmeta');
+  }
+}
+
+async function applyBlurToggle(disable) {
+  const pairs = [
+    ['persist.sys.sf.disable_blurs',   disable ? '1'     : '0'],
+    ['persist.sys.sf.disable_blur',    disable ? '1'     : '0'],
+    ['persist.sysui.disable_blur',     disable ? 'true'  : 'false']
+  ];
+  for (const [k, v] of pairs) await exec('resetprop -n ' + k + ' ' + v);
+  log('Blur ' + (disable ? 'desactivado' : 'activado'), 'ok', 'log-system');
+}
+
+function updateSlider(id, val) { document.getElementById(id).textContent = val; }
+
+// ── State ─────────────────────────────────────────────────────
+const state = {
+  zramSize: '4294967296', zramComp: 'lzo-rle',
+  swappiness: 60, scheduler: 'mq-deadline', governor: 'schedutil', readAhead: 2048
+};
+
+// ── Init ─────────────────────────────────────────────────────
+async function init() {
+  // Cargar config guardada
+  const c = await exec('cat ' + CONF + ' 2>/dev/null || true');
+  if (c.stdout.trim()) {
+    c.stdout.trim().split('\n').forEach(line => {
+      const eq = line.indexOf('='); if (eq < 0) return;
+      const k = line.substring(0, eq).trim(), v = line.substring(eq + 1).trim();
+      if (k === 'ZRAM_SIZE')  state.zramSize   = v;
+      if (k === 'ZRAM_COMP')  state.zramComp   = v;
+      if (k === 'SWAPPINESS') state.swappiness = parseInt(v) || 60;
+      if (k === 'SCHEDULER')  state.scheduler  = v;
+      if (k === 'GOVERNOR')   state.governor   = v;
+      if (k === 'READ_AHEAD_KB') state.readAhead = parseInt(v) || 2048;
+    });
+  }
+
+  // Leer todas las props en dos exec (props + kernel files) para mayor velocidad
+  const propKeys = [
+    'persist.sys.window_animation_scale', 'persist.sys.transition_animation_scale',
+    'persist.sys.animator_duration_scale', 'ro.max.fling_velocity',
+    'persist.sys.miui.anim_sw_threshold', 'debug.performance.tuning',
+    'persist.sys.perf.topAppRenderThreadBoost.enable', 'persist.sys.miui_booster',
+    'debug.adreno.mem.mb', 'persist.sys.composition.type', 'debug.hwui.renderer',
+    'persist.sys.miui.sf.vsync', 'debug.sf.disable_backpressure',
+    'debug.gr.num_framebuffer_frames', 'debug.egl.buffercount',
+    'debug.sf.early_phase_offset_ns', 'persist.audio.bt.a2dp.hifi',
+    'persist.bluetooth.a2dp.ldac.quality', 'audio.offload.buffer.size.kb',
+    'af.resampler.quality', 'audio.deep_buffer.media',
+    'persist.vendor.audio.offload.multiple.enabled', 'audio.offload.gapless.enabled',
+    'audio.playback.capture.pcm.quality', 'persist.bluetooth.a2dp.aac_vbr',
+    'persist.bluetooth.a2dp.aac_frame_ctl', 'persist.bluetooth.a2dp.ldac.abr',
+    'persist.bluetooth.a2dp.aac_whitelist', 'persist.radio.data_con_recovery',
+    'persist.sys.miui_sptm.enable', 'persist.sys.miui_sptm_new.enable',
+    'persist.sys.enable_ignorecloud_rtmode', 'persist.sys.stability.smartfocusio',
+    'persist.miui.speed_up_freeform', 'persist.miui.home_reuse_leash',
+    'persist.vendor.camera.enable_fast_launch', 'persist.vendor.camera.perf.hfr.enable',
+    'persist.sys.thermal.config', 'ro.thermal.warm_limit', 'ro.thermal.cool_limit',
+    'dalvik.vm.dex2oat-threads', 'dalvik.vm.dex2oat-filter',
+    'dalvik.vm.heaptargetutilization', 'dalvik.vm.heapsize',
+    'persist.miui.migt.enable', 'persist.miui.migt.game_boost',
+    'debug.adreno.preemption.disable', 'sys.use_fifo_ui',
+    'debug.adreno.lrz.enable', 'persist.sys.sf.disable_blurs',
+    'persist.sys.job_delay',
+    'debug.adreno.syncobj_timeline', 'debug.adreno.gpu_bimc_clk',
+    'debug.sf.enable_transaction_tracing', 'debug.sf.reuse_layer_content',
+    'ro.surface_flinger.set_idle_timer_ms', 'debug.sf.early_app_phase_offset_ns',
+    'ro.audio.flinger_standbytime_ms', 'ro.audio.pcm.cb.size',
+    'ro.vendor.audio.voice.enhance', 'ro.vendor.audio.surround.support',
+    'persist.sys.miui_optimization', 'persist.sys.mirim.enable',
+    'persist.sys.miui_sptm.ignore_cloud_enable', 'persist.sys.miui_sptm_animation.enable',
+    'persist.sys.use_boot_compact', 'persist.sys.miui_slow_startup_mode.enable',
+    'ro.config.nocheckin', 'persist.radio.data_no_toggle', 'persist.radio.add_power_save',
+    'ro.iorapd.enable', 'persist.iorapd.enable',
+    'video.accelerate.hw', 'ro.input.noresample', 'persist.sys.purgeable_assets'
+  ];
+  const propCmd = propKeys.map(k => 'echo "' + k + '=$(resetprop ' + k + ' 2>/dev/null)"').join('; ');
+
+  const fileKeys = [
+    '/sys/block/sda/queue/scheduler',
+    '/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor',
+    '/proc/sys/vm/swappiness', '/sys/block/zram0/disksize',
+    '/sys/block/sda/queue/read_ahead_kb',
+    '/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors',
+    '/proc/sys/net/ipv4/tcp_congestion_control',
+    '/proc/sys/net/ipv4/tcp_fastopen', '/proc/sys/net/ipv4/tcp_ecn',
+    '/proc/sys/net/ipv4/tcp_window_scaling', '/proc/sys/net/ipv4/tcp_mtu_probing',
+    '/proc/sys/net/ipv4/tcp_sack', '/proc/sys/net/ipv4/tcp_tw_reuse',
+    '/proc/sys/vm/vfs_cache_pressure', '/proc/sys/vm/dirty_ratio'
+  ];
+  const fileCmd = fileKeys.map(p => {
+    const tag = p.replace(/\//g, '_').replace(/^_/, '');
+    return 'echo "' + tag + '=$(cat ' + p + ' 2>/dev/null)"';
+  }).join('; ');
+
+  const [rProps, rFiles] = await Promise.all([exec(propCmd), exec(fileCmd)]);
+
+  // Parsear resultados
+  const P = {}, F = {};
+  (rProps.stdout || '').split('\n').forEach(l => {
+    const e = l.indexOf('='); if (e < 0) return;
+    P[l.substring(0, e).trim()] = l.substring(e + 1).trim();
+  });
+  (rFiles.stdout || '').split('\n').forEach(l => {
+    const e = l.indexOf('='); if (e < 0) return;
+    F[l.substring(0, e).trim()] = l.substring(e + 1).trim();
+  });
+
+  // Helpers
+  const setV = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
+  const setC = (id, v) => { const el = document.getElementById(id); if (el) el.checked = (v==='1'||v==='true'||v==='gpu'||v==='on'); };
+
+  // Props del sistema
+  setV('sys-window-scale', P['persist.sys.window_animation_scale']);
+  setV('sys-transition-scale', P['persist.sys.transition_animation_scale']);
+  setV('sys-animator-scale', P['persist.sys.animator_duration_scale']);
+  setV('sys-fling', P['ro.max.fling_velocity']);
+  setV('sys-miui-anim-sw', P['persist.sys.miui.anim_sw_threshold']);
+  setC('sys-perf-tuning', P['debug.performance.tuning']);
+  setC('sys-render-boost', P['persist.sys.perf.topAppRenderThreadBoost.enable']);
+  setC('sys-miui-booster', P['persist.sys.miui_booster']);
+  setC('sys-blur-off', P['persist.sys.sf.disable_blurs']);
+  if (P['debug.adreno.mem.mb']) {
+    document.getElementById('sys-adreno-mem').value = P['debug.adreno.mem.mb'];
+    document.getElementById('val-adreno-mem').textContent = P['debug.adreno.mem.mb'];
+  }
+  setC('sys-gpu-compose', P['persist.sys.composition.type']);
+  setV('sys-hwui-renderer', P['debug.hwui.renderer']);
+  setC('sys-sf-vsync', P['persist.sys.miui.sf.vsync']);
+  setC('sys-sf-backpressure', P['debug.sf.disable_backpressure']);
+  setV('sys-egl-fbcount', P['debug.gr.num_framebuffer_frames']);
+  setV('sys-egl-buffers', P['debug.egl.buffercount']);
+  setV('sys-sf-phase', P['debug.sf.early_phase_offset_ns']);
+  setC('sys-bt-hifi', P['persist.audio.bt.a2dp.hifi']);
+  setV('sys-ldac-quality', P['persist.bluetooth.a2dp.ldac.quality']);
+  setV('sys-offload-buf', P['audio.offload.buffer.size.kb']);
+  setV('sys-resampler', P['af.resampler.quality']);
+  setC('sys-deep-buffer', P['audio.deep_buffer.media']);
+  setC('sys-offload-multi', P['persist.vendor.audio.offload.multiple.enabled']);
+  setC('sys-gapless', P['audio.offload.gapless.enabled']);
+  setV('sys-pcm-quality', P['audio.playback.capture.pcm.quality']);
+  setC('sys-aac-vbr', P['persist.bluetooth.a2dp.aac_vbr']);
+  setC('sys-aac-frame', P['persist.bluetooth.a2dp.aac_frame_ctl']);
+  setC('sys-ldac-abr', P['persist.bluetooth.a2dp.ldac.abr']);
+  setC('sys-aac-whitelist', P['persist.bluetooth.a2dp.aac_whitelist']);
+  setC('sys-data-recovery', P['persist.radio.data_con_recovery']);
+  setC('sys-sptm', P['persist.sys.miui_sptm.enable']);
+  setC('sys-sptm-new', P['persist.sys.miui_sptm_new.enable']);
+  setC('sys-cloud-override', P['persist.sys.enable_ignorecloud_rtmode']);
+  setC('sys-smart-focus', P['persist.sys.stability.smartfocusio']);
+  setC('sys-freeform', P['persist.miui.speed_up_freeform']);
+  setC('sys-home-reuse', P['persist.miui.home_reuse_leash']);
+  setC('sys-cam-fast', P['persist.vendor.camera.enable_fast_launch']);
+  setC('sys-cam-hfr', P['persist.vendor.camera.perf.hfr.enable']);
+  setC('sys-thermal-config', P['persist.sys.thermal.config'] === '0');
+  setV('sys-thermal-warm', P['ro.thermal.warm_limit']);
+  setV('sys-thermal-cool', P['ro.thermal.cool_limit']);
+  setV('sys-dex2oat-threads', P['dalvik.vm.dex2oat-threads']);
+  setV('sys-dex2oat-filter', P['dalvik.vm.dex2oat-filter']);
+  setV('sys-heap-util', P['dalvik.vm.heaptargetutilization']);
+  setV('sys-heap-size', P['dalvik.vm.heapsize']);
+  // Gaming
+  setC('sys-migt', P['persist.miui.migt.enable']);
+  setC('sys-migt-boost', P['persist.miui.migt.game_boost']);
+  setC('sys-adreno-preempt', P['debug.adreno.preemption.disable']);
+  setC('sys-fifo-ui', P['sys.use_fifo_ui']);
+  setC('sys-adreno-lrz', P['debug.adreno.lrz.enable']);
+  setC('sys-job-delay', P['persist.sys.job_delay']);
+  // Nuevas props
+  setC('sys-adreno-sync', P['debug.adreno.syncobj_timeline']);
+  setC('sys-adreno-bimc', P['debug.adreno.gpu_bimc_clk']);
+  setC('sys-sf-trace-off', P['debug.sf.enable_transaction_tracing'] === 'false');
+  setC('sys-sf-reuse', P['debug.sf.reuse_layer_content']);
+  setV('sys-sf-idle', P['ro.surface_flinger.set_idle_timer_ms']);
+  setV('sys-app-phase', P['debug.sf.early_app_phase_offset_ns']);
+  setV('sys-af-standby', P['ro.audio.flinger_standbytime_ms']);
+  setV('sys-pcm-cb', P['ro.audio.pcm.cb.size']);
+  setC('sys-voice-enhance', P['ro.vendor.audio.voice.enhance']);
+  setC('sys-surround', P['ro.vendor.audio.surround.support']);
+  setC('sys-miui-opt', P['persist.sys.miui_optimization']);
+  setC('sys-mirim', P['persist.sys.mirim.enable'] === 'false');
+  setC('sys-sptm-cloud', P['persist.sys.miui_sptm.ignore_cloud_enable']);
+  setC('sys-sptm-anim', P['persist.sys.miui_sptm_animation.enable'] === 'false');
+  setC('sys-boot-compact', P['persist.sys.use_boot_compact']);
+  setC('sys-slow-startup', P['persist.sys.miui_slow_startup_mode.enable'] === 'false');
+  setC('sys-no-checkin', P['ro.config.nocheckin']);
+  setC('sys-data-no-toggle', P['persist.radio.data_no_toggle']);
+  setC('sys-radio-ps', P['persist.radio.add_power_save'] === '0');
+  setC('sys-iorapd', P['ro.iorapd.enable']);
+  setC('sys-video-hw', P['video.accelerate.hw']);
+  setC('sys-no-resample', P['ro.input.noresample']);
+  setC('sys-purgeable', P['persist.sys.purgeable_assets'] === '0');
+
+  // Kernel files
+  const rSched  = F['sys_block_sda_queue_scheduler'] || '';
+  const rGov    = F['sys_devices_system_cpu_cpu0_cpufreq_scaling_governor'] || '';
+  const rSwap   = F['proc_sys_vm_swappiness'] || '';
+  const rZram   = F['sys_block_zram0_disksize'] || '';
+  const rRA     = F['sys_block_sda_queue_read_ahead_kb'] || '';
+  const availGov= F['sys_devices_system_cpu_cpu0_cpufreq_scaling_available_governors'] || '';
+  const tcpCc   = F['proc_sys_net_ipv4_tcp_congestion_control'] || '';
+  const tcpFO   = F['proc_sys_net_ipv4_tcp_fastopen'] || '';
+  const tcpEcn  = F['proc_sys_net_ipv4_tcp_ecn'] || '';
+  const tcpWs   = F['proc_sys_net_ipv4_tcp_window_scaling'] || '';
+  const tcpMtu  = F['proc_sys_net_ipv4_tcp_mtu_probing'] || '';
+  const tcpSack = F['proc_sys_net_ipv4_tcp_sack'] || '';
+  const tcpTwr  = F['proc_sys_net_ipv4_tcp_tw_reuse'] || '';
+  const vfsPres = F['proc_sys_vm_vfs_cache_pressure'] || '';
+  const dirtyR  = F['proc_sys_vm_dirty_ratio'] || '';
+  const boreVal = F['proc_sys_kernel_sched_bore'] || '';
+
+  // Governors dinámicos
+  const govSel = document.getElementById('sel-gov');
+  govSel.innerHTML = '';
+  if (availGov) availGov.split(/\s+/).filter(Boolean).forEach(g => {
+    const o = document.createElement('option'); o.value = g; o.textContent = g; govSel.appendChild(o);
+  });
+
+  // Schedulers dinámicos
+  const schedSel = document.getElementById('sel-sched');
+  schedSel.innerHTML = '';
+  if (rSched) rSched.replace(/[\[\]]/g, '').split(/\s+/).filter(Boolean).forEach(s => {
+    const o = document.createElement('option'); o.value = s; o.textContent = s; schedSel.appendChild(o);
+  });
+
+  // Badgets kernel
+  const sm = rSched ? rSched.match(/\[([^\]]+)\]/) : null;
+  if (sm)       document.getElementById('cur-sched').textContent = 'activo: ' + sm[1];
+  if (rGov)     document.getElementById('cur-gov').textContent   = 'activo: ' + rGov;
+  if (rSwap)    document.getElementById('cur-swap').textContent  = 'valor actual: ' + rSwap;
+  if (rZram) {
+    const gb = (parseInt(rZram) / 1073741824).toFixed(1);
+    document.getElementById('cur-zram').textContent = 'activo: ' + gb + ' GB';
+    document.getElementById('zram-val-tag').textContent = gb + ' GB';
+  }
+  if (rRA)      document.getElementById('cur-ra').textContent    = 'activo: ' + rRA + ' KB';
+  if (tcpCc)    document.getElementById('cur-tcp-cc-live').textContent = 'activo: ' + tcpCc;
+
+  // TCP toggles
+  if (tcpFO)  { const el = document.getElementById('sys-tcp-fastopen'); if(el) el.checked = (tcpFO === '3'); }
+  if (tcpEcn) { const el = document.getElementById('sys-tcp-ecn');  if(el) el.checked = (tcpEcn  === '1'); }
+  if (tcpWs)  { const el = document.getElementById('sys-tcp-wscale'); if(el) el.checked = (tcpWs  === '1'); }
+  if (tcpMtu) { const el = document.getElementById('sys-tcp-mtu');  if(el) el.checked = (tcpMtu  === '1'); }
+  if (tcpSack){ const el = document.getElementById('sys-tcp-sack'); if(el) el.checked = (tcpSack === '1'); }
+  if (tcpTwr) { const el = document.getElementById('sys-tcp-twreuse'); if(el) el.checked = (tcpTwr === '1'); }
+  if (tcpCc)  setV('sys-tcp-cc', tcpCc);
+
+  // VM sliders
+  if (vfsPres) { document.getElementById('sys-vfs-pressure').value = parseInt(vfsPres); document.getElementById('val-vfs-pressure').textContent = vfsPres; }
+  if (dirtyR)  { document.getElementById('sys-dirty-ratio').value  = parseInt(dirtyR);  document.getElementById('val-dirty-ratio').textContent  = dirtyR; }
+  // BORE
+  const boreEl = document.getElementById('kern-bore');
+  if (boreVal) {
+    boreEl.checked = (boreVal.trim() === '1');
+    document.getElementById('cur-bore').textContent = 'activo en kernel: ' + (boreVal.trim() === '1' ? 'ON' : 'OFF');
+  } else {
+    // BORE no disponible en este kernel
+    if (boreEl) { boreEl.disabled = true; boreEl.parentElement.style.opacity = '0.4'; }
+    document.getElementById('cur-bore').textContent = 'No disponible en este kernel';
+  }
+
+  applyKernelUI();
+  await loadVbmetaState();
+  log('Sistema sincronizado ✨', 'ok');
+}
+
+// ── Kernel UI ─────────────────────────────────────────────────
+function applyKernelUI() {
+  document.querySelectorAll('.zram-chip').forEach(b => b.classList.toggle('active', b.dataset.val === state.zramSize));
+  setSelectVal('sel-comp',  state.zramComp);
+  setSelectVal('sel-sched', state.scheduler);
+  setSelectVal('sel-gov',   state.governor);
+  document.getElementById('sl-swappiness').value = state.swappiness;
+  document.getElementById('val-swappiness').textContent = state.swappiness;
+  document.getElementById('sl-readahead').value = state.readAhead;
+  document.getElementById('val-readahead').textContent = state.readAhead;
+}
+
+function setSelectVal(id, val) {
+  const sel = document.getElementById(id); if (!sel) return;
+  for (const o of sel.options) if (o.value === val) { sel.value = val; return; }
+  const o = document.createElement('option'); o.value = val; o.textContent = val;
+  sel.insertBefore(o, sel.firstChild); sel.value = val;
+}
+
+// ── ZRAM / sliders ───────────────────────────────────────────
+document.getElementById('zram-btns').addEventListener('click', e => {
+  const btn = e.target.closest('.zram-chip'); if (!btn) return;
+  state.zramSize = btn.dataset.val;
+  document.querySelectorAll('.zram-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('zram-val-tag').textContent = (parseInt(state.zramSize) / 1073741824).toFixed(1) + ' GB';
+});
+document.getElementById('sl-swappiness').addEventListener('input', e => {
+  state.swappiness = parseInt(e.target.value);
+  document.getElementById('val-swappiness').textContent = state.swappiness;
+});
+document.getElementById('sl-readahead').addEventListener('input', e => {
+  state.readAhead = parseInt(e.target.value);
+  document.getElementById('val-readahead').textContent = state.readAhead;
+});
+
+// ── Save config ───────────────────────────────────────────────
+async function saveFullConfig() {
+  const lines = [
+    'ZRAM_SIZE='   + state.zramSize,
+    'ZRAM_COMP='   + state.zramComp,
+    'SWAPPINESS='  + state.swappiness,
+    'SCHEDULER='   + state.scheduler,
+    'GOVERNOR='    + state.governor,
+    'READ_AHEAD_KB='+ state.readAhead,
+    'WINDOW_SCALE='+ document.getElementById('sys-window-scale').value,
+    'TRANSITION_SCALE='+ document.getElementById('sys-transition-scale').value,
+    'ANIMATOR_SCALE='  + document.getElementById('sys-animator-scale').value,
+    'FLING_VELOCITY='  + document.getElementById('sys-fling').value,
+    'MIUI_ANIM_SW='    + document.getElementById('sys-miui-anim-sw').value,
+    'PERF_TUNING='     + (document.getElementById('sys-perf-tuning').checked     ? '1' : '0'),
+    'RENDER_BOOST='    + (document.getElementById('sys-render-boost').checked    ? 'true' : 'false'),
+    'MIUI_BOOSTER='    + (document.getElementById('sys-miui-booster').checked    ? '1' : '0'),
+    'ADRENO_MEM_MB='   + document.getElementById('sys-adreno-mem').value,
+    'GPU_COMPOSE='     + (document.getElementById('sys-gpu-compose').checked     ? 'gpu' : 'mdp'),
+    'HWUI_RENDERER='   + document.getElementById('sys-hwui-renderer').value,
+    'SF_VSYNC='        + (document.getElementById('sys-sf-vsync').checked        ? '1' : '0'),
+    'SF_BACKPRESSURE=' + (document.getElementById('sys-sf-backpressure').checked ? '1' : '0'),
+    'EGL_FBCOUNT='     + document.getElementById('sys-egl-fbcount').value,
+    'EGL_BUFFERS='     + document.getElementById('sys-egl-buffers').value,
+    'SF_PHASE='        + document.getElementById('sys-sf-phase').value,
+    'BT_HIFI='         + (document.getElementById('sys-bt-hifi').checked         ? 'true' : 'false'),
+    'LDAC_QUALITY='    + document.getElementById('sys-ldac-quality').value,
+    'OFFLOAD_BUF_KB='  + document.getElementById('sys-offload-buf').value,
+    'RESAMPLER='       + document.getElementById('sys-resampler').value,
+    'DEEP_BUFFER='     + (document.getElementById('sys-deep-buffer').checked     ? '1' : '0'),
+    'OFFLOAD_MULTI='   + (document.getElementById('sys-offload-multi').checked   ? 'true' : 'false'),
+    'GAPLESS='         + (document.getElementById('sys-gapless').checked         ? 'true' : 'false'),
+    'PCM_QUALITY='     + document.getElementById('sys-pcm-quality').value,
+    'AAC_VBR='         + (document.getElementById('sys-aac-vbr').checked         ? 'true' : 'false'),
+    'AAC_FRAME='       + (document.getElementById('sys-aac-frame').checked       ? 'true' : 'false'),
+    'LDAC_ABR='        + (document.getElementById('sys-ldac-abr').checked        ? 'true' : 'false'),
+    'AAC_WHITELIST='   + (document.getElementById('sys-aac-whitelist').checked   ? 'true' : 'false'),
+    'TCP_CC='          + document.getElementById('sys-tcp-cc').value,
+    'TCP_FASTOPEN='    + (document.getElementById('sys-tcp-fastopen').checked    ? '3' : '1'),
+    'TCP_ECN='         + (document.getElementById('sys-tcp-ecn').checked         ? '1' : '0'),
+    'TCP_WSCALE='      + (document.getElementById('sys-tcp-wscale').checked      ? '1' : '0'),
+    'TCP_MTU_PROBING=' + (document.getElementById('sys-tcp-mtu').checked         ? '1' : '0'),
+    'TCP_SACK='        + (document.getElementById('sys-tcp-sack').checked        ? '1' : '0'),
+    'TCP_TWREUSE='     + (document.getElementById('sys-tcp-twreuse').checked     ? '1' : '0'),
+    'DATA_RECOVERY='   + (document.getElementById('sys-data-recovery').checked   ? 'true' : 'false'),
+    'VFS_PRESSURE='    + document.getElementById('sys-vfs-pressure').value,
+    'DIRTY_RATIO='     + document.getElementById('sys-dirty-ratio').value,
+    'SPTM='            + (document.getElementById('sys-sptm').checked            ? 'true' : 'false'),
+    'SPTM_NEW='        + (document.getElementById('sys-sptm-new').checked        ? 'true' : 'false'),
+    'CLOUD_OVERRIDE='  + (document.getElementById('sys-cloud-override').checked  ? 'true' : 'false'),
+    'SMART_FOCUS='     + (document.getElementById('sys-smart-focus').checked     ? 'on' : 'off'),
+    'FREEFORM='        + (document.getElementById('sys-freeform').checked        ? 'true' : 'false'),
+    'HOME_REUSE='      + (document.getElementById('sys-home-reuse').checked      ? 'true' : 'false'),
+    'CAM_FAST='        + (document.getElementById('sys-cam-fast').checked        ? '1' : '0'),
+    'CAM_HFR='         + (document.getElementById('sys-cam-hfr').checked         ? '1' : '0'),
+    'THERMAL_CONFIG='  + (document.getElementById('sys-thermal-config').checked  ? '0' : '1'),
+    'THERMAL_WARM='    + document.getElementById('sys-thermal-warm').value,
+    'THERMAL_COOL='    + document.getElementById('sys-thermal-cool').value,
+    'DEX2OAT_THREADS=' + document.getElementById('sys-dex2oat-threads').value,
+    'DEX2OAT_FILTER='  + document.getElementById('sys-dex2oat-filter').value,
+    'HEAP_UTIL='       + document.getElementById('sys-heap-util').value,
+    'HEAP_SIZE='       + document.getElementById('sys-heap-size').value,
+    'MIGT='            + (document.getElementById('sys-migt').checked            ? '1' : '0'),
+    'MIGT_BOOST='      + (document.getElementById('sys-migt-boost').checked      ? '1' : '0'),
+    'ADRENO_PREEMPT='  + (document.getElementById('sys-adreno-preempt').checked  ? '1' : '0'),
+    'FIFO_UI='         + (document.getElementById('sys-fifo-ui').checked         ? 'true' : 'false'),
+    'ADRENO_LRZ='      + (document.getElementById('sys-adreno-lrz').checked      ? '1' : '0'),
+    'BLUR_OFF='        + (document.getElementById('sys-blur-off').checked        ? '1' : '0'),
+    'JOB_DELAY='       + (document.getElementById('sys-job-delay').checked       ? 'true' : 'false'),
+    'BORE_ENABLE='     + (document.getElementById('kern-bore').checked && !document.getElementById('kern-bore').disabled ? (document.getElementById('kern-bore').checked ? '1' : '0') : ''),
+    'ADRENO_SYNC='     + (document.getElementById('sys-adreno-sync').checked     ? '1' : '0'),
+    'ADRENO_BIMC='     + (document.getElementById('sys-adreno-bimc').checked     ? '1' : '0'),
+    'SF_TRACE_OFF='    + (document.getElementById('sys-sf-trace-off').checked    ? 'false' : 'true'),
+    'SF_REUSE='        + (document.getElementById('sys-sf-reuse').checked        ? '1' : '0'),
+    'SF_IDLE='         + document.getElementById('sys-sf-idle').value,
+    'APP_PHASE='       + document.getElementById('sys-app-phase').value,
+    'AF_STANDBY='      + document.getElementById('sys-af-standby').value,
+    'PCM_CB='          + document.getElementById('sys-pcm-cb').value,
+    'VOICE_ENHANCE='   + (document.getElementById('sys-voice-enhance').checked   ? '1' : '0'),
+    'SURROUND='        + (document.getElementById('sys-surround').checked        ? 'true' : 'false'),
+    'MIUI_OPT='        + (document.getElementById('sys-miui-opt').checked        ? 'true' : 'false'),
+    'MIRIM_OFF='       + (document.getElementById('sys-mirim').checked           ? 'false' : 'true'),
+    'SPTM_CLOUD='      + (document.getElementById('sys-sptm-cloud').checked      ? 'true' : 'false'),
+    'SPTM_ANIM_OFF='   + (document.getElementById('sys-sptm-anim').checked       ? 'false' : 'true'),
+    'BOOT_COMPACT='    + (document.getElementById('sys-boot-compact').checked    ? 'true' : 'false'),
+    'SLOW_STARTUP_OFF='+ (document.getElementById('sys-slow-startup').checked    ? 'false' : 'true'),
+    'NO_CHECKIN='      + (document.getElementById('sys-no-checkin').checked      ? '1' : '0'),
+    'DATA_NO_TOGGLE='  + (document.getElementById('sys-data-no-toggle').checked  ? '1' : '0'),
+    'RADIO_PS_OFF='    + (document.getElementById('sys-radio-ps').checked        ? '0' : '1'),
+    'IORAPD='          + (document.getElementById('sys-iorapd').checked          ? 'true' : 'false'),
+    'VIDEO_HW='        + (document.getElementById('sys-video-hw').checked        ? '1' : '0'),
+    'NO_RESAMPLE='     + (document.getElementById('sys-no-resample').checked     ? '1' : '0'),
+    'PURGEABLE_OFF='   + (document.getElementById('sys-purgeable').checked       ? '0' : '1')
+  ];
+
+  await exec('mkdir -p /data/adb/modules/sr.mat');
+  // Escribir línea a línea: primer echo con >, resto con >> para evitar problemas de escaping
+  const firstLine = lines[0];
+  const restLines = lines.slice(1);
+  const writeCmd = 'echo "' + firstLine + '" > ' + CONF + '; ' +
+    restLines.map(l => 'echo "' + l + '" >> ' + CONF).join('; ');
+  const r = await exec(writeCmd);
+  if (r.errno === 0) log('Configuración guardada ✓', 'ok', 'log-system');
+  else log('Error guardando config', 'err', 'log-system');
+}
+
+// ── Apply kernel ──────────────────────────────────────────────
+async function applyConfig() {
+  state.zramComp  = document.getElementById('sel-comp').value;
+  state.scheduler = document.getElementById('sel-sched').value;
+  state.governor  = document.getElementById('sel-gov').value;
+
+  const btn = document.getElementById('btn-apply');
+  btn.disabled = true; btn.textContent = 'Aplicando...';
+  log('── Aplicando Kernel ──', 'info');
+
+  const r1 = await exec('swapoff /dev/block/zram0; echo 1 > /sys/block/zram0/reset; echo ' + state.zramSize + ' > /sys/block/zram0/disksize; echo ' + state.zramComp + ' > /sys/block/zram0/comp_algorithm; mkswap /dev/block/zram0; swapon /dev/block/zram0');
+  log('ZRAM ' + (parseInt(state.zramSize)/1073741824).toFixed(1) + ' GB ' + (r1.errno===0?'✓':'✗'), r1.errno===0?'ok':'err');
+
+  await exec('echo ' + state.swappiness + ' > /proc/sys/vm/swappiness');
+  log('Swappiness ' + state.swappiness + ' ✓', 'ok');
+
+  const r3 = await exec('for q in /sys/block/sd*/queue/scheduler; do [ -f "$q" ] && grep -q ' + state.scheduler + ' "$q" 2>/dev/null && echo ' + state.scheduler + ' > "$q" 2>/dev/null; done; true');
+  const r3v = await exec('grep -o "\\[.*\\]" /sys/block/sda/queue/scheduler 2>/dev/null | tr -d "[]"');
+  const schedActive = (r3v.stdout || '').trim();
+  const schedOk = schedActive === state.scheduler;
+  log('Scheduler ' + state.scheduler + (schedOk ? ' ✓' : ' ✗ (sda: ' + (schedActive || '?') + ')'), schedOk ? 'ok' : 'err');
+
+  const r4 = await exec('for g in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do [ -f "$g" ] && avail="${g%scaling_governor}scaling_available_governors"; grep -q ' + state.governor + ' "$avail" 2>/dev/null && echo ' + state.governor + ' > "$g"; done');
+  log('Governor ' + state.governor + ' ' + (r4.errno===0?'✓':'✗'), r4.errno===0?'ok':'err');
+
+  const r5 = await exec('for b in /sys/block/sd*/queue/read_ahead_kb; do [ -f "$b" ] && echo ' + state.readAhead + ' > "$b"; done');
+  log('Read-ahead ' + state.readAhead + ' KB ' + (r5.errno===0?'✓':'✗'), r5.errno===0?'ok':'err');
+
+  await applyTcpCongestion(document.getElementById('sys-tcp-cc').value);
+  await saveFullConfig();
+
+  document.getElementById('cur-zram').textContent = 'activo: ' + (parseInt(state.zramSize)/1073741824).toFixed(1) + ' GB';
+  document.getElementById('zram-val-tag').textContent = (parseInt(state.zramSize)/1073741824).toFixed(1) + ' GB';
+  document.getElementById('cur-swap').textContent = 'valor actual: ' + state.swappiness;
+  document.getElementById('cur-sched').textContent = 'activo: ' + state.scheduler;
+  document.getElementById('cur-gov').textContent   = 'activo: ' + state.governor;
+  document.getElementById('cur-ra').textContent    = 'activo: ' + state.readAhead + ' KB';
+
+  log('── Kernel aplicado y guardado ──', 'ok');
+  btn.disabled = false; btn.textContent = 'Aplicar y Guardar';
+}
+
+// ── Apply tweaks ──────────────────────────────────────────────
+async function applySystemConfig() {
+  const btn = document.getElementById('btn-apply-system');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  await saveFullConfig();
+  log('── Tweaks guardados ──', 'ok', 'log-system');
+  btn.disabled = false; btn.textContent = 'Aplicar y Guardar Tweaks';
+  if (typeof ksu !== 'undefined' && ksu.toast) ksu.toast('✅ Tweaks guardados');
+}
+
+init();
+</script>
+</body>
+</html>

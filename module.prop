@@ -1,0 +1,17 @@
+##########################################################################################
+# HyperPerf+ v1 - Magisk Module Properties
+# Dispositivo probado: Redmi Note 13 Pro 5G (garnet / Snapdragon 7s Gen 2)
+# Autor: @srmatdroid® GPLv3
+##########################################################################################
+# Identificador único del módulo
+id=sr.mat
+# Nombre visible en Magisk Manager
+name=HyperPerf+
+# Versión del módulo (para mostrar)
+version=v1.0
+# Código de versión (para comparaciones, número entero)
+versionCode=10
+# Autor del módulo
+author=srmatdroid
+# Descripción detallada del módulo
+description=🚀 HyperPerf+ - Optimización avanzada para HyperOS/MIUI/ •  • Props de rendimiento • Fix vbmeta/Integrity • Audio optimizado • Bluetooth LDAC • Game Turbo integrado • Universal (Snapdragon/MediaTek) webui para mas configuracion 
