@@ -45,11 +45,11 @@ No es un módulo de props genérico copiado de internet. Cada ajuste está revis
 
 ## 📱 Compatibilidad
 
-Probado en **Redmi Note 13 Pro 5G** (garnet / Snapdragon 7s Gen 2 / Adreno 710 / HyperOS 2).
+Probado en **Redmi Note 13 Pro 5G** (garnet / Snapdragon 7s Gen 2 / Adreno 710 / HyperOS 3).
 
 Diseñado para ser universal: los ajustes de kernel leen el hardware disponible antes de aplicar, no asume governor ni scheduler fijo.
 
-> Snapdragon · MediaTek · Exynos — siempre que el kernel exponga los nodos estándar de Linux.
+> Snapdragon · MediaTek(REVISA POST-FS-DATA) — siempre que el kernel exponga los nodos estándar de Linux.
 
 ---
 
