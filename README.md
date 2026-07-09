@@ -33,7 +33,7 @@ HyperPerf+ is a KernelSU / Magisk module that exposes kernel parameters, system 
 | Kernel | GKI 5.10 or GKI 6.1 recommended |
 | Chipset | Snapdragon (primary target), MediaTek (partial support) |
 | Tested device | Redmi Note 13 Pro 5G (garnet / Snapdragon 7s Gen 2) |
-| Tested ROM | HyperOS 1.x / 2.x |
+| Tested ROM | HyperOS 1.x / 2.x / 3.x |
 
 ---
 
