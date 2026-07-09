@@ -93,7 +93,7 @@ This file survives dirty flashes (it is in `/data/adb/`, not in the module's sys
 
 The interface has three tabs: **Kernel**, **Tweaks**, and **Stats**.
 
-The language can be switched between Spanish and English using the buttons in the top right corner.
+The language can be switched between Spanish, English, and Russian (BETA) using the buttons in the top right corner.
 
 ---
 
@@ -122,9 +122,15 @@ The Kernel tab controls parameters that require lower-level access or that are a
 
 #### I/O Scheduler
 
-| Option | Description |
-|---|---|
-| Scheduler | I/O scheduler applied to all UFS LUNs (sda-sdf) and eMMC (mmcblk). Available schedulers are read live from the kernel. If Auto is selected no value is applied and the kernel default remains. |
+Schedulers can now be configured **independently per device**.
+
+| Option | Scope | Description |
+|---|---|---|
+| Scheduler | sdb–sdf | I/O scheduler applied to the data LUNs. These are the secondary partitions — each one serves a more predictable workload, so throughput-oriented schedulers like **mq-deadline** or **kyber** are a good fit. |
+| SDA — Scheduler | sda (boot LUN) | The main UFS device that holds system, data, and user storage. Every app launch, texture stream, database write, and cache operation goes through SDA. This is the busiest device and the one that benefits most from a **latency-optimised scheduler** such as **bfq** (which groups I/O by process and gives priority to interactive-task requests) or **zen** (a tuned deadline variant with low write latency). |
+| DM-0 — Scheduler | dm-0 (device mapper) | An I/O layer on top of the physical device used for dm-verity, encryption, snapshots, etc. On GKI kernels dm-0 typically exposes only **"none"** because the real I/O is handled by the underlying device's scheduler. The module lets you set it explicitly for kernels that do support it. |
+
+If a control is left on Auto, no value is applied for that device and the kernel default remains unchanged.
 
 The module verifies after applying that the scheduler name appears active in the block device's queue node. The result is shown in the apply log.
 
@@ -135,6 +141,21 @@ The module verifies after applying that the scheduler name appears active in the
 | Option | Description |
 |---|---|
 | Governor | CPU frequency scaling governor. Applied to all CPU cores after verifying it exists in `scaling_available_governors`. If Auto is selected the kernel default remains. |
+
+---
+
+#### CPU Frequencies
+
+Min and max CPU frequency controls, independently for each cluster.
+
+| Option | Scope | Description |
+|---|---|---|
+| Little — Min freq | cpu0–3 | Minimum frequency for the efficiency cores. Raising this reduces app-launch latency at a small battery cost. Auto = no lower limit. |
+| Little — Max freq | cpu0–3 | Maximum frequency for the efficiency cores. Capping this reduces temperature during light use. Auto = no upper limit. |
+| Big — Min freq | cpu4–7 | Minimum frequency for the performance cores. Raising this guarantees instant CPU headroom when a game or heavy app starts, at a battery cost. Auto = no lower limit. |
+| Big — Max freq | cpu4–7 | Maximum frequency for the performance cores. Capping this keeps temperatures under control during long gaming sessions. Auto = no upper limit. |
+
+Each row has its own enable checkbox. Values are only written to the kernel when the checkbox is on.
 
 ---
 
@@ -222,6 +243,15 @@ When a control is inactive (toggle off or Activar unchecked), the corresponding 
 | Early phase offset SF (ns) | `debug.sf.early_phase_offset_ns` | Phase offset of SurfaceFlinger's early wake-up relative to the VSYNC signal. |
 | Early App Phase Offset (ns) | `debug.sf.early_app_phase_offset_ns` | Advances the moment the app starts producing a frame relative to the SF cycle. |
 | SF Idle Timer (ms) | `ro.surface_flinger.set_idle_timer_ms` | Time before SF lowers the refresh rate on inactivity. 0 = SF never lowers Hz due to inactivity. |
+| SF Multithreaded Present | `debug.sf.multithreaded_present` | SF uses parallel threads to present frames. Reduces pressure on the main SF thread under high compositing load. Android 14+. |
+| Frame Rate Priority | `debug.sf.use_frame_rate_priority` | SF prioritises apps that request a high frame rate via `setFrameRate()`. Improves FPS stability in games that use the API. |
+| No VSync Screen OFF | `debug.sf.no_vsyncs_on_screen_off` | SF stops waiting for VSync when the screen is turned off. Reduces power consumption and wakeup latency. |
+| SF Context Priority | `ro.surface_flinger.use_context_priority` | SurfaceFlinger uses elevated context priority in the compositor thread. Reduces composition latency under system load. |
+| RenderEngine Graphite | `debug.renderengine.graphite` | Enables the Graphite (Skia NG) backend in SF's RenderEngine. More efficient on GPUs with Vulkan support. Android 14+. |
+| Frame Rate Override | `debug.sf.enable_frame_rate_override` | SF enables active frame rate override management. Required for `setFrameRate()` and app-level overrides to have real effect in the compositor. |
+| Predict HWC Composition | `debug.sf.predict_hwc_composition_strategy` | SF predicts whether the hardware composer (HWC) or GPU will be used for each frame before committing. Reduces microstutters caused by mid-frame compositor switches. |
+| Frame Rate Threshold | `debug.sf.frame_rate_multiple_threshold` | Multiple threshold for SF frame rate switching. SF only switches to a lower/higher multiple if the difference exceeds this value. 0 = disabled. |
+| SF uclamp.min | `ro.surface_flinger.uclamp.min` | Minimum CPU utilisation clamp for SurfaceFlinger threads. Higher values prevent SF from dropping below that utilisation floor. 0 = no floor. |
 
 ---
 
@@ -241,6 +271,7 @@ When a control is inactive (toggle off or Activar unchecked), the corresponding 
 | PCM Callback Buffer | `ro.audio.pcm.cb.size` | PCM callback buffer size. Lower = less latency. 128 is the recommended balance. |
 | Voice Enhance | `ro.vendor.audio.voice.enhance` | Improved vocal clarity. Experimental, depends on the vendor audio HAL. Snapdragon only. |
 | Surround Audio | `ro.vendor.audio.surround.support` | Surround sound support. Experimental, depends on the device's vendor audio HAL. |
+| Surround on speakers | `persist.vendor.audio.3dsurround.enable`, `ro.vendor.audio.surround.headphone.only` | Enables virtual immersive audio on the device's built-in speakers, not only on headphones. Sets `ro.vendor.audio.surround.headphone.only=false` and enables the 3dsurround system prop. Requires vendor audio HAL support. |
 
 ---
 
@@ -270,6 +301,13 @@ When a control is inactive (toggle off or Activar unchecked), the corresponding 
 | Google Checkin OFF | `ro.config.nocheckin` | Disables periodic Google check-in. Reduces background traffic and unnecessary network wake-ups. |
 | Data No Toggle | `persist.radio.data_no_toggle` | Prevents data toggling during modem reconnections. Reduces drops on cell handover. |
 | Radio Power Save OFF | `persist.radio.add_power_save` | Disables additional modem power saving. More stable signal at a small battery cost. |
+| Thin-Stream Linear Timeouts | `net.ipv4.tcp_thin_linear_timeouts` | For low-rate traffic (online games): uses linear backoff instead of exponential after a packet loss. Recovers orders of magnitude faster on unstable mobile networks. |
+| Thin-Stream Fast Retransmit | `net.ipv4.tcp_thin_dupack` | Lowers the retransmission threshold for low-rate flows. Pairs with Linear Timeouts for the best latency recovery in mobile gaming. |
+| No TCP Metrics Save | `net.ipv4.tcp_no_metrics_save` | Does not cache RTT/cwnd from previous connections on the same route. Prevents starting new connections with stale metrics after a cell tower or WiFi-to-LTE handover. |
+| Qdisc | `net.core.default_qdisc` | Kernel network queueing discipline. `fq_codel` keeps latency low under load (recommended for gaming + streaming). `cake` has the best AQM but higher CPU cost. |
+| Buffer max | `net.core.rmem_max`, `net.core.wmem_max` | Maximum TCP/UDP buffer size. Larger buffers increase throughput but cause bufferbloat (higher ping). Gaming: 4 MB. Balanced: 8 MB. Throughput: 16 MB. |
+| TCP Low Latency | `net.ipv4.tcp_low_latency` | Optimises the TCP stack for latency over throughput. Reduces the prefetch buffer. Useful when ping consistency matters more than bandwidth. |
+| Keepalive Time | `net.ipv4.tcp_keepalive_time` | Idle time before the kernel probes whether a connection is still alive. Lower values detect dead connections faster after a cell change. Stock Android: 7200 s. |
 
 > **VoLTE protection:** A background monitor loop in `service.sh` reads `gsm.call_state` every 4 seconds. When a call is active it forces `tcp_ecn=0` and `tcp_fastopen=1`. When the call ends it restores the values configured by the user.
 
@@ -459,7 +497,7 @@ Kernel parameters (TCP tunables, swappiness, schedulers, governors) reset to the
 | APatch | Compatible |
 | GKI 5.10 | Tested (Templar Kernel on garnet) |
 | GKI 6.1 | Compatible |
-| HyperOS 1.x / 2.x | Tested |
+| HyperOS 1.x / 2.x / 3.x | full suport |
 | MIUI 14 | Compatible |
 | Snapdragon | Full support |
 | MediaTek | Partial support (Adreno-specific options inactive) |
